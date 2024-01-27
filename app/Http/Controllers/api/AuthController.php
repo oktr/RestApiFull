@@ -28,7 +28,7 @@ class AuthController extends BaseController {
         return $this->sendResponse( $success, "Sikeres regisztrácio" );
 
     }
-//valami
+
     public function login( UserLoginChecker $request ) {
 
         $bannedTime = $this->getTooManyLoginAttemptsTime( $request->name );
