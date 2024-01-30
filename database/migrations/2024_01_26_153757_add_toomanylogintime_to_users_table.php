@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer( "toomanylogintime" )->nullable()->default( null );
+            $table->integer( "login_attempts" )->default( 0 );
+            $table->integer( "banned_time" )->nullable()->default( null );
         });
     }
 

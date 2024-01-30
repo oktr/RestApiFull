@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class AuthController extends BaseController {
 
-    private $loginCounter = 0;
-    
     public function register( UserRegisterChecker $request ) {
 
         $request->validated();
@@ -31,28 +29,35 @@ class AuthController extends BaseController {
 
     public function login( UserLoginChecker $request ) {
 
-        $bannedTime = $this->getTooManyLoginAttemptsTime( $request->name );
+        $bannedTime = $this->getUserBannedTime( $request->name );
         $request->validated();
 
-        if(( $bannedTime + 60 ) < time() && 
-            Auth::attempt([ "name" => $request->name, "password" => $request->password ])) {
+        if((( $bannedTime + 60 < time() ) && 
+             Auth::attempt([ "name" => $request->name, "password" => $request->password ]))) {
 
-            $this->resetTooManyLoginAttemptsTime( $request->name );
-            $authUser = Auth::user();
-            $success[ "token" ] = $authUser->createToken( $authUser->name."Token" )->plainTextToken;
-            $success[ "name" ] = $authUser->name;
+            $this->resetBannedData( $request->name );
+            // $authUser = Auth::user();
+            // $success[ "token" ] = $authUser->createToken( $authUser->name."Token" )->plainTextToken;
+            // $success[ "name" ] = $authUser->name;
 
-            return $this->sendResponse( $success, "Sikeres bejelentkezés" );
+            return "ok"; //$this->sendResponse( $success, "Sikeres bejelentkezés" );
 
         }else {
 
-            $this->loginCounter++;
-            if( $this->loginCounter == 3 ) {
+            $loginCounter = $this->getLoginAttempts( $request->name );
+            if( $loginCounter < 3 ) {
 
-                $this->setTooManyLoginAttemptsTime();
+                $this->setLoginAttempts( $request->name );
+                return "Próbálkozások: ".$loginCounter;
+                
+            }else if( $loginCounter == 3 &&  is_null( $bannedTime )) {
+
+                $this->setUserBannedTime( $request->name );
+
+                return $bannedTime;
             }
             
-            return $this->loginCounter; //$this->sendError( "Sikertelen azonosítás", [ "error" => "Hibás felhasználónév vagy jelszó" ]);
+            return $bannedTime; //$this->sendError( "Sikertelen azonosítás", [ "error" => "Hibás felhasználónév vagy jelszó" ]);
         }
     }
 
@@ -63,22 +68,39 @@ class AuthController extends BaseController {
         return response()->json("Sikeres kijelentkezés");
     }
 
-    private function getTooManyLoginAttemptsTime( $name ) {
+    private function getLoginAttempts( $name ) {
 
-        $attemptUser = User::where( "name", $name )->first();
+        $user = User::where( "name", $name )->first();
+        $loginAttempts = $user->login_attempts;
 
-        return $attemptUser->toomanylogintime;
+        return $loginAttempts;
     }
 
-    private function setTooManyLoginAttemptsTime( $name ) {
+    private function getUserBannedTime( $name ) {
 
-        $currentTime = DB::table( "users" )
-            ->where( "name", $name )
-            ->update([ "toomanylogintime" => time() ]);
+        $user = User::where( "name", $name )->first();
+
+        return $user->banned_time;
     }
 
-    private function resetTooManyLoginAttemptsTime( $name ) {
+    private function setLoginAttempts( $name ) {
+        
+        User::where( "name", $name )->increment( "login_attempts" );
+    }
 
-        DB::table( "users" )->where( "name", $name )->update([ "toomanylogintime" => null ]);
+    private function setUserBannedTime( $name ) {
+
+        $user = User::where( "name", $name )->first();
+        $user->banned_time = time();
+        $user->save();
+    }
+
+    private function resetBannedData( $name ) {
+
+        $user = User::where( "name", $name )->first();
+        $user->login_attempts = 0;
+        $user->banned_time = null;
+
+        $user->save();
     }
 }
