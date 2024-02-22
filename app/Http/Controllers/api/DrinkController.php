@@ -54,7 +54,7 @@ class DrinkController extends BaseController {
         $drink = Drink::find( $id );
         $drink->drink = $input[ "drink" ];
         $drink->amount = $input[ "amount" ];
-        $drink->type_id = ( new TypeController )->getTypeId( $input[ "type" ]);;
+        $drink->type_id = ( new TypeController )->getTypeId( $input[ "type" ]);
         $drink->quantity_id = ( new QuantityController )->getQuantityId( $input[ "quantity" ]);
         
         $drink->update();

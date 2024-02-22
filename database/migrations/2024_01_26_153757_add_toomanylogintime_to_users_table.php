@@ -9,11 +9,11 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+    public function up(): void {
+
         Schema::table('users', function (Blueprint $table) {
-            $table->integer( "login_attempts" )->default( 0 );
-            $table->integer( "banned_time" )->nullable()->default( null );
+            $table->timestamp( "login_attempts" )->default( 0 );
+            $table->timestamp( "banned_time" )->nullable()->default( null );
         });
     }
 

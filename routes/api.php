@@ -33,7 +33,7 @@ Route::group([ "middleware" => [ "auth:sanctum" ]], function() {
 });
 
 Route::post( "/register", [ AuthController::class, "register" ]);
-Route::post( "/login", [ AuthController::class, "login" ]);
+Route::post( "/login", [ AuthController::class, "isValidUser" ]);
 Route::get( "/drinks", [ DrinkController::class, "getDrinks" ]);
 Route::get( "/oneDrink/{id}", [ DrinkController::class, "getOneDrink" ]);
 Route::get( "/types", [ TypeController::class, "getTypes" ]);

@@ -46,12 +46,4 @@ class UserLoginChecker extends FormRequest
             "data" => $validator->errors()
         ]));
     }
-
-    // public function tooManyLoginAttempt() {
-
-    //     throw new ThrottleRequestException( response()->json([
-    //         "success" => false,
-    //         "message" => "Túl sok próbálkozás"
-    //     ]));
-    // }
 }
